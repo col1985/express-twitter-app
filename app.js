@@ -4,11 +4,33 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+
+var exphbs = require('express-handlebars');
+
+
 require('dotenv').config();
 
 var routes = require('./routes/index');
 
 var app = express();
+
+var hbs = exphbs.create({
+
+    defaultLayout: 'main',
+
+    partialsDir: [
+        'views/layouts',
+        'views/'
+    ],
+
+    // Specify helpers which are only registered on this instance.
+    helpers: {
+        foo: function() { return 'FOO!'; },
+        bar: function() { return 'BAR!'; }
+    }
+});
+
+app.enable('view cache');
 
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
@@ -18,7 +40,18 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 // app.use(express.static(path.join(__dirname, 'client')));
 
+app.engine('handlebars', hbs.engine);
+app.set('view engine', 'handlebars');
+
 app.use('/', routes);
+
+app.get('/home', function(req, res) {
+    res.render('home', {
+        showTitle: true,
+        title: 'Twitter App'
+    });
+});
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
